@@ -5,7 +5,7 @@ import (
 	ctrl "go-form/controller"
 )
 
-func SetupRouter() (*gin.Engine){
+func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
 	//表单工具
@@ -16,6 +16,8 @@ func SetupRouter() (*gin.Engine){
 		r.GET("/getform/:id", ctrl.GetForm)
 		//更新
 		r.PUT("/getform/:id", ctrl.UpdateForm)
+		//根据formId复制表单
+		r.POST("/copy_form", ctrl.CopyForm)
 		//创建
 		r.POST("/getform", ctrl.CreateForm)
 		//删除
