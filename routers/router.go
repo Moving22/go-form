@@ -22,5 +22,13 @@ func SetupRouter() (*gin.Engine){
 		r.DELETE("/getform/:id", ctrl.DeleteForm)
 	}
 
+	{
+		r.GET("/test_fields", ctrl.GetTestField)
+		r.GET("/form_fields", ctrl.GetFormField)
+		r.GET("/data_fields", ctrl.GetDataFiled)
+		r.PUT("/form_fields/:id", ctrl.PutFormField)
+		r.DELETE("/form_fields/:id", ctrl.DelFormField)
+		//r.POST("/form_fields", ctrl.PostFormField)
+	}
 	return r
 }

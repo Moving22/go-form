@@ -25,9 +25,15 @@ type Form struct {
 
 
 //按页查找，id降序
-func QueryPageForm(num, size int) ([]Form,error){
+func QueryPageForm(num int, size int, name string) ([]Form,error){
 	var rforms []RawForm
-	sql := "select * from test order by id desc limit ?,?"
+	var sql string
+	if name !="" {
+		sql = fmt.Sprintf(`select * from test where name=%s order by id desc limit ?,?`, name)
+	}else {
+		sql = "select * from test order by id desc limit ?,?"
+	}
+
 	begin := (num-1) * size
 	end := num * size
 	err := dao.Db.Select(&rforms, sql, begin, end)			//Select查多个

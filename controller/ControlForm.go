@@ -12,9 +12,10 @@ func GetPageForm(c *gin.Context)  {
 	//获取pageNumber和pageSize
 	pageNum ,_ := strconv.Atoi(c.DefaultQuery("pageNumber","1"))
 	pageSize ,_ := strconv.Atoi(c.DefaultQuery("pageSize","10"))
+	name := c.Query("name")
 
 	//获取数据库中的数据
-	forms, err := mod.QueryPageForm(pageNum, pageSize)
+	forms, err := mod.QueryPageForm(pageNum, pageSize, name)
 
 	//响应数据
 	if err == nil {
@@ -54,7 +55,7 @@ func GetForm(c *gin.Context)  {
 }
 
 
-//编辑页面的保存表单，更新
+//编辑页面的保存表单，更新，注：？
 func UpdateForm(c *gin.Context)  {
 	id := c.Param("id")
 	bytes,err := c.GetRawData()		//获取request.body参数
@@ -102,6 +103,7 @@ func DeleteForm(c *gin.Context)  {
 	}else {
 		c.JSON(200, gin.H{
 			"code":0,
+			"msg" : "删除成功",
 		})
 	}
 }
@@ -110,7 +112,7 @@ func DeleteForm(c *gin.Context)  {
 //创建表单，添加一个默认表单，再返回该表单
 func CreateForm(c *gin.Context)  {
 	var m map[string]string
-	c.BindJSON(&m)			//更优的获取json参数
+	c.BindJSON(&m)			//更优的获取json参数，ShouldBlindJSON 只绑定结构体tag有binding:required的参数
 
 	id,err := mod.AddDefaultForm(m["name"])
 
@@ -126,3 +128,8 @@ func CreateForm(c *gin.Context)  {
 		})
 	}
 }
+
+
+
+
+
