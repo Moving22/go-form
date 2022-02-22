@@ -31,5 +31,13 @@ type UpdateFormBody struct {
 
 
 type CopyFormBody struct {
-	FormId string
+	FormId int
+}
+
+type FormParam struct {
+	UpdateFormBody
+	FormId		int `json:"id" form:"id" uri:"id"`
+	PageNumber 	int `json:"pageNumber" form:"pageNumber"`
+	PageSize 	int `json:"pageSize" form:"pageSize"`
+	FormName 	string `json:"name" form:"name"`
 }

@@ -7,20 +7,20 @@ import (
 
 type FormService struct{}
 
-func (formService *FormService) GetForms(num int, size int, name string) (forms []Form, err error){
-	if name == ""{
-		forms, err = dao.QueryForms(num, size)
+func (formService *FormService) GetForms(params FormParam) (forms []Form, err error){
+	if params.FormName == ""{
+		forms, err = dao.QueryForms(params.PageNumber, params.PageSize)
 	}else {
-		forms, err = dao.QueryFormsByName(num, size, name)
+		forms, err = dao.QueryFormsByName(params.PageNumber, params.PageSize, params.FormName)
 	}
 	return forms, err
 }
 
-func (formService *FormService) DeleteForm(id string) (error) {
-	return dao.DeleteFormById(id)
+func (formService *FormService) DeleteForm(params FormParam) (error) {
+	return dao.DeleteFormById(params.FormId)
 }
 
-func (formService *FormService) GetForm(id string, Type int) (form *Form, err error) {
+func (formService *FormService) GetForm(id int, Type int) (form *Form, err error) {
 	if Type == 0 {
 		form, err = dao.SelectFormById(id)
 	}
@@ -30,9 +30,9 @@ func (formService *FormService) GetForm(id string, Type int) (form *Form, err er
 	return form, err
 }
 
-func (formService *FormService) AddForm(name string, form *Form, Type int) (id int64, err error) {
+func (formService *FormService) AddForm(params FormParam, form *Form, Type int) (id int64, err error) {
 	if Type == 0 {
-		id, err = dao.AddDefaultForm(name)
+		id, err = dao.AddDefaultForm(params.FormName)
 	}
 	if Type == 1 {
 		id, err = dao.AddForm(*form)

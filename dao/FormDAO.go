@@ -38,7 +38,7 @@ func QueryForms(num, size int) (forms []Form, err error) {
 	return forms, err
 }
 
-func QueryFormById(id string) (form *Form, err error) {
+func QueryFormById(id int) (form *Form, err error) {
 	sql := "select * from test where id=?"
 	err = utils.Db.Get(&form, sql, id) //Get查一个
 	if err != nil {
@@ -48,7 +48,7 @@ func QueryFormById(id string) (form *Form, err error) {
 }
 
 //根据id查找表单
-func SelectFormById(id string) (*Form,error) {
+func SelectFormById(id int) (*Form,error) {
 	var form Form
 	if query, arg, err := squirrel.Select("*").From("test").Where(squirrel.Eq{"id": id}).ToSql(); err == nil {
 		if err := utils.Db.QueryRowx(query, arg...).StructScan(&form); err == nil {
@@ -116,7 +116,7 @@ func UpdateFormById(id string, updateFormBody UpdateFormBody) error {
 	}
 }
 
-func DeleteFormById(id string) error {
+func DeleteFormById(id int) error {
 	if query, arg, err := squirrel.Delete("test").Where(squirrel.Eq{"id": id}).ToSql(); err == nil {
 		if _, err := utils.Db.Exec(query, arg...); err == nil{
 			return nil
