@@ -22,36 +22,29 @@ import (
 //}
 
 //按页查找，id降序
-func QueryPageForm(num int, size int, name string) ([]Form, error) {
-	var rforms []Form
-	var sql string
-	if name != "" {
-		sql = fmt.Sprintf(`select * from test where name='%s' order by id desc limit ?,?`, name)
-	} else {
-		sql = "select * from test order by id desc limit ?,?"
-	}
+func QueryFormsByName(num int, size int, name string) (forms []Form, err error) {
 	begin := (num - 1) * size
 	end := num * size
-	if err := utils.Db.Select(&rforms, sql, begin, end); err != nil {
-		return nil, err
-	}
-	return rforms, nil
+	sql := fmt.Sprintf(`select * from test where name='%s' order by id desc limit ?,?`, name)
+	err = utils.Db.Select(&forms, sql, begin, end)
+	return forms, err
 }
 
-//??
-func QueryFormById(id string) (*Form, error) {
-	var rform Form
+func QueryForms(num, size int) (forms []Form, err error) {
+	begin := (num - 1) * size
+	end := num * size
+	sql := "select * from test order by id desc limit ?,?"
+	err = utils.Db.Select(&forms, sql, begin, end)
+	return forms, err
+}
+
+func QueryFormById(id string) (form *Form, err error) {
 	sql := "select * from test where id=?"
-	err := utils.Db.Get(&rform, sql, id) //Get查一个
+	err = utils.Db.Get(&form, sql, id) //Get查一个
 	if err != nil {
 		fmt.Printf("QueryFormById err：%v\n", err)
-		return nil, err
 	}
-	//解析原生表单的JSON字符串
-	var form Form
-	form.Id = rform.Id
-	form.Name = rform.Name
-	return &form, nil
+	return form, err
 }
 
 //根据id查找表单
@@ -83,7 +76,7 @@ func AddDefaultForm(name string) (int64, error) {
 }
 
 //增加一个表单
-func AddForm(form *Form) (int64, error) {
+func AddForm(form Form) (int64, error) {
 	if qeuryString, args, err := squirrel.Insert("test").Columns("name", "formdata", "rule").Values(form.Name, form.Formdata, form.Rule).ToSql(); err == nil {
 		if res, err := utils.Db.Exec(qeuryString, args...); err != nil {
 			fmt.Printf("AddDefaultForm err: %v\n", err)

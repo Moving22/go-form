@@ -11,6 +11,8 @@ import (
 	"strconv"
 )
 
+var formService service.FormService
+
 //获得一页表单
 func GetPageForm(c *gin.Context) {
 	//获取pageNumber和pageSize
@@ -18,8 +20,7 @@ func GetPageForm(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 	name := c.Query("name")
 
-	//获取数据库中的数据
-	forms, err := service.QueryForms(pageNum, pageSize, name)
+	forms, err := formService.GetForms(pageNum, pageSize, name)
 
 	//响应数据
 	if err == nil {
@@ -32,7 +33,7 @@ func GetPageForm(c *gin.Context) {
 //获得某表单
 func GetForm(c *gin.Context) {
 	id := c.Param("id")
-	if form,err := dao.SelectFormById(id); err==nil{
+	if form,err := formService.GetForm(id, 0); err==nil{
 		c.JSON(http.StatusOK, lib.Success(form))
 	}else {
 		fmt.Printf("err: %v", err)
@@ -46,7 +47,7 @@ func UpdateForm(c *gin.Context) {
 	var updateFormBody UpdateFormBody
 	id := c.Param("id")
 	if err := c.ShouldBindJSON(&updateFormBody); err == nil {
-		if err := dao.UpdateFormById(id, updateFormBody); err == nil {
+		if err := formService.UpdateForm(id, updateFormBody); err == nil {
 			c.JSON(http.StatusOK, lib.Success(nil))
 		} else {
 			fmt.Printf("%+v\n",err)
@@ -62,7 +63,7 @@ func UpdateForm(c *gin.Context) {
 //删除表单
 func DeleteForm(c *gin.Context) {
 	id := c.Param("id")
-	if err := dao.DeleteFormById(id); err != nil {
+	if err := formService.DeleteForm(id); err != nil {
 			c.JSON(http.StatusInternalServerError, lib.Fail(1,"DeleteForm错误"))
 	} else {
 		c.JSON(http.StatusOK, lib.Success(nil))
@@ -74,8 +75,8 @@ func DeleteForm(c *gin.Context) {
 func CopyForm(c *gin.Context) {
 	var copyFormBody CopyFormBody
 	if err := c.ShouldBindJSON(&copyFormBody); err == nil { //更优的获取json参数，ShouldBlindJSON 只绑定结构体tag有binding:required的参数
-		if record, err := dao.QueryFormById(copyFormBody.FormId); err != nil {
-			if newFormId, err := dao.AddForm(record); err != nil {
+		if record, err := formService.GetForm(copyFormBody.FormId, 1); err != nil {
+			if newFormId, err := dao.AddForm(*record); err != nil {
 				record.Id = int(newFormId)
 				c.JSON(http.StatusOK, lib.Success(record))
 			} else {
@@ -94,7 +95,7 @@ func CopyForm(c *gin.Context) {
 func CreateForm(c *gin.Context) {
 	var m map[string]string
 	if err := c.ShouldBindJSON(&m); err == nil { //更优的获取json参数，ShouldBlindJSON 只绑定结构体tag有binding:required的参数
-		if id, err := dao.AddDefaultForm(m["name"]); err != nil {
+		if id, err := formService.AddForm(m["name"], nil, 0); err != nil {
 			c.JSON(http.StatusInternalServerError, lib.Fail(1, "AddDefaultForm err"))
 		} else {
 			c.JSON(http.StatusOK, gin.H{
