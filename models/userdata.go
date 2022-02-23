@@ -1,11 +1,11 @@
 package models
 
-import ."go-form/utils"
+import "go-form/utils"
 
 type UserData struct {
-	Id 			int `json:"id" db:"id"`
+	Id 			int `json:"id" db:"id" form:"id" uri:"id"`
 	TableKey 	int `json:"table_key" db:"table_key" form:"table_key"`
-	Data		JSON `json:"data" db:"data"`
+	Data		utils.JSON `json:"data" db:"data" form:"data"`
 	UserId		int `json:"userId" db:"userId" form:"userId"`
 	CourseId	int `json:"courseId" db:"courseId"`
 	OrderNumber	string `json:"orderNumber" db:"orderNumber" form:"orderNumber"`// GET中的·ShouldBind·需要·form·
@@ -20,8 +20,3 @@ type TableData struct {
 	ColumnValue string `json:"column_value" db:"table_key" form:"column_value"`
 }
 
-type UserTable struct {
-	TableKey 	string `json:"table_key" db:"table_key"`
-	UserId 		string `json:"userId" db:"userId"`
-	OrderNumber	string `json:"orderNumber" db:"orderNumber"`
-}

@@ -1,9 +1,7 @@
 package controller
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"go-form/dao"
 	"go-form/lib"
 	. "go-form/models"
 	"go-form/service"
@@ -33,11 +31,10 @@ func GetPageForm(c *gin.Context) {
 //获得某表单
 func GetForm(c *gin.Context) {
 	var params FormParam
-	if err := c.ShouldBind(&params); err == nil{
+	if err := c.ShouldBindUri(&params); err == nil{
 		if form,err := formService.GetForm(params.FormId, 0); err==nil{
 			c.JSON(http.StatusOK, lib.Success(form))
 		}else {
-			fmt.Printf("err: %v", err)
 			c.JSON(http.StatusInternalServerError, lib.Fail(1,"GetForm错误"))
 		}
 	}else {
@@ -66,7 +63,6 @@ func UpdateForm(c *gin.Context) {
 func DeleteForm(c *gin.Context) {
 	var params FormParam
 	if err := c.ShouldBindUri(&params); err == nil{
-		fmt.Printf("%+v\n", params)
 		if err := formService.DeleteForm(params); err != nil {
 			c.JSON(http.StatusInternalServerError, lib.Fail(1,"DeleteForm错误"))
 		} else {
@@ -83,7 +79,7 @@ func CopyForm(c *gin.Context) {
 	var copyFormBody CopyFormBody
 	if err := c.ShouldBindJSON(&copyFormBody); err == nil { //更优的获取json参数，ShouldBlindJSON 只绑定结构体tag有binding:required的参数
 		if record, err := formService.GetForm(copyFormBody.FormId, 1); err != nil {
-			if newFormId, err := dao.AddForm(*record); err != nil {
+			if newFormId, err := formService.AddFormByForm(*record); err != nil {
 				record.Id = int(newFormId)
 				c.JSON(http.StatusOK, lib.Success(record))
 			} else {

@@ -1,22 +1,21 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"go-form/dao"
 	"go-form/lib"
 	. "go-form/models"
-	. "go-form/utils"
+	"go-form/service"
+	"go-form/utils"
 	"net/http"
 )
 
-
+var userDataService service.UserDataService
 
 func GetTestField(c *gin.Context)  {
 	var tableData TableData
 	if err := c.ShouldBind(&tableData); err ==nil{
-		if cnt, err := dao.GetTableCount(tableData); err == nil{
+		if cnt, err := userDataService.GetTableCount(tableData); err == nil{
 			m := make(map[string]int)
 			m["result"] = len(cnt)
 			c.JSON(http.StatusOK, lib.Success(m))
@@ -33,11 +32,11 @@ func GetTestField(c *gin.Context)  {
 func GetFormField(c *gin.Context)  {
 	var userData UserData
 	if err := c.ShouldBind(&userData); err == nil{
-		if res, err := dao.GetIds(userData); err == nil{
+		if res, err := userDataService.GetDataIds(userData); err == nil{
 			if res == nil {
-				c.JSON(http.StatusOK, lib.Fail(1,"未查到"))
+				c.JSON(http.StatusOK, lib.Fail(0,"未查到"))
 			}else {
-				c.JSON(http.StatusOK, lib.Success(res))
+				c.JSON(http.StatusOK, lib.Success(utils.JSON{"id":res}))
 			}
 		}else {
 			c.JSON(http.StatusInternalServerError, lib.Fail(1,"GetIds err"))
@@ -51,7 +50,7 @@ func GetFormField(c *gin.Context)  {
 func GetDataFiled(c *gin.Context)  {
 	var userTable UserData
 	if err := c.ShouldBind(&userTable); err == nil{
-		if data, err := dao.GetUserData(userTable); err == nil{
+		if data, err := userDataService.GetUserData(userTable); err == nil{
 			c.JSON(http.StatusOK, lib.Success(data))
 		}else {
 			fmt.Printf("%+v\n",err)
@@ -66,24 +65,33 @@ func GetDataFiled(c *gin.Context)  {
 
 func PutFormField(c *gin.Context)  {
 	id := c.Param("id")
-	var m JSON
-	c.BindJSON(&m)
-	data,_ := json.Marshal(m)
-	if err := dao.UpdateUserDataById(id, string(data)); err == nil {
-		c.JSON(http.StatusOK, lib.Success(nil))
+	var params UserData
+	if err := c.ShouldBind(&params); err == nil{
+		fmt.Printf("%s\n", params.Data)
+		if err := userDataService.UpdateById(id, params); err == nil {
+			c.JSON(http.StatusOK, lib.Success(nil))
+		}else {
+			fmt.Printf("%+v\n",err)
+			c.JSON(http.StatusInternalServerError, lib.Fail(1,"更新失败"))
+		}
 	}else {
-		fmt.Printf("%+v\n",err)
-		c.JSON(http.StatusInternalServerError, lib.Fail(1,"更新失败"))
+		c.JSON(http.StatusBadRequest, lib.Fail(1,"参数错误"))
 	}
+
 }
 
 
 func DelFormField(c *gin.Context)  {
-	id := c.Param("id")
-	if err := dao.DeleteUserDataById(id); err == nil{
-		c.JSON(http.StatusOK, lib.Success(nil))
+	var params UserData
+	if err := c.ShouldBindUri(&params); err == nil{
+		if err := userDataService.Delete(params); err == nil{
+			c.JSON(http.StatusOK, lib.Success(nil))
+		}else {
+			c.JSON(http.StatusInternalServerError, lib.Fail(1,"删除失败"))
+		}
 	}else {
-		c.JSON(http.StatusInternalServerError, lib.Fail(1,"删除失败"))
+		c.JSON(http.StatusBadRequest, lib.Fail(1,"参数错误"))
 	}
+
 }
 
